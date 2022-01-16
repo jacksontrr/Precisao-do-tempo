@@ -1,0 +1,29 @@
+version: '3.7'
+
+services:
+
+  db-clima: # Banco de dados
+    image: mysql:8.0 # Imagem do banco de dados
+    environment:
+      MYSQL_ROOT_PASSWORD: root # Senha
+
+
+  phpmyadmin-clima: # Interface grafica do phpmyadmin
+    image: phpmyadmin # Imagem do phpmyadmin
+    ports:
+      - 3600:80 # Porta utilizada
+    depends_on: 
+      - db-clima # depende do db que é o Banco de dados
+  
+  php-clima: # Imagem do php
+        # image: nimmis/apache-php7
+        build: 
+            context: . # Onde estar localizado o docker se esetiver na mesma pasta não precisa colocar.
+            dockerfile: Dockerfile # Faz a leitura do Dockerfile
+        
+        ports: 
+            - "8080:80"
+        volumes: # Onde vai ser colocado a pasta onde estar rodando o php
+            - ".:/var/www/html" #  Desse lado fica a pasta do sistema php ".:/var/www/html" desse lado fica a pasta dentro do container. OBS.: É em linux
+        depends_on: 
+            - phpmyadmin-clima # Depende do phpmyadmin

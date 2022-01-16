@@ -1,0 +1,4 @@
+<?php 
+    /* https://advisor.climatempo.com.br/ */
+    define('CLIMA_TEMPO_API', 'chave')
+?>
