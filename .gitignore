@@ -8,5 +8,5 @@
 # Outros.
 Dockerfile
 docker-compose.yml
-app/config/config.php
+app/config/.env
 

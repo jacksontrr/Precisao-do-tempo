@@ -1,19 +1,24 @@
 <?php
-require_once("app/config/config.php");
 require_once("app/modules/api.php");
+include_once("app/config/vendor/autoload.php");
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . "/app/config");
+$dotenv->load();
+$token = $_ENV['TOKEN'];
 
-$clima_api = new Clima_tempo_API(CLIMA_TEMPO_API);
+$clima_api = new Clima_tempo_API($token);
 
 $all_cities = $clima_api->all_cities();
-$city_registered = $clima_api->city_already_registered();
-foreach ($all_cities as $city) {
-    if ($city->id == $city_registered->locales[0]) {
-        $current_city = $city->name;
+if ( !empty($all_cities)) {
+    $city_registered = $clima_api->city_already_registered();
+    foreach ($all_cities as $city) {
+        if ($city->id == $city_registered->locales[0]) {
+            $current_city = $city->name;
+        }
     }
-}
-$idCity = $_POST['idcity'] ?? $city_registered->locales[0];
-if (!empty($idCity)) {
-    $clima = $clima_api->current_weather($idCity);
+    $idCity = $_POST['idcity'] ?? $city_registered->locales[0];
+    if (!empty($idCity)) {
+        $clima = $clima_api->current_weather($idCity);
+    }
 }
 ?>
 
@@ -43,19 +48,25 @@ if (!empty($idCity)) {
         <div class="row">
             <div class="col-md-6">
                 <form action="index.php" method="POST">
-                    <select name="idcity" id="idcity">
-                        <?php foreach ($all_cities as $key => $values) { ?>
-                            <option value="<?php echo $values->id; ?>"><?php echo $values->name; ?></option>
-                        <?php } ?>
-                    </select>
-                    <button type="submit" class="btn btn-primary">Search</button>
+                    <div class="row">
+                        <div class="col-md-9">
+                            <select name="idcity" id="idcity" class="form-select">
+                                <?php foreach ($all_cities as $key => $values) { ?>
+                                    <option value="<?php echo $values->id; ?>"><?php echo $values->name; ?></option>
+                                <?php } ?>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="submit" class="btn btn-primary btn-sm">Search</button>
+                        </div>
+                    </div>
                 </form>
             </div>
         </div>
         <div class="row">
             <div class="col-md-12">
-                <div id="resultado">
-                    <?php if ($clima->error != true) { ?>
+                <div id="resultado" style="margin-top: 10px;">
+                    <?php if ($clima->error != true && !empty($clima)) { ?>
                         <h2>Weather Forecast for <?php echo $current_city; ?></h2>
                         <div class="row">
                             <label for="Temperature">
@@ -85,7 +96,7 @@ if (!empty($idCity)) {
                     <?php } else { ?>
                         <div class="row">
                             <div class="alert alert-danger" role="alert">
-                                Erro: <?php echo $clima->detail; ?>
+                                Error: <?php echo $clima->detail ?? $all_cities->detail; ?>
                             </div>
                         </div>
                     <?php } ?>
