@@ -21,12 +21,7 @@ class Clima_tempo_API
                 $url .= $key . '=' . urlencode($value) . '&';
             }
             $url = substr($url, 0, -1);
-            $curl_handle = curl_init();
-            curl_setopt($curl_handle, CURLOPT_URL, $url);
-            curl_setopt($curl_handle, CURLOPT_CONNECTTIMEOUT, 2);
-            curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($curl_handle, CURLOPT_USERAGENT, 'Clima Tempo API');
-            $response = curl_exec($curl_handle);
+            $response = $this->file_g_contents($url);
             return json_decode($response);
         } else {
             return false;
@@ -40,26 +35,15 @@ class Clima_tempo_API
 
     function register_a_city($city_id)
     {
-        header('Content-Type: application/x-www-form-urlencoded;');
         $url = 'http://apiadvisor.climatempo.com.br/api-manager/user-token/' . $this->token . '/locales?localeId[]=' . $city_id;
-        $curl_handle = curl_init();
-        curl_setopt($curl_handle, CURLOPT_URL, $url);
-        curl_setopt($curl_handle, CURLOPT_CONNECTTIMEOUT, 2);
-        curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($curl_handle, CURLOPT_USERAGENT, 'Clima Tempo API');
-        $response = curl_exec($curl_handle);
+        $response = $this->file_g_contents($url, "PUT", array('Content-Type: application/x-www-form-urlencoded'));
         return json_decode($response);
     }
 
     function city_already_registered()
     {
         $url = 'http://apiadvisor.climatempo.com.br/api-manager/user-token/' . $this->token . '/locales';
-        $curl_handle = curl_init();
-        curl_setopt($curl_handle, CURLOPT_URL, $url);
-        curl_setopt($curl_handle, CURLOPT_CONNECTTIMEOUT, 2);
-        curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($curl_handle, CURLOPT_USERAGENT, 'Clima Tempo API');
-        $response = curl_exec($curl_handle);
+        $response = $this->file_g_contents($url);
         return json_decode($response);
     }
 
@@ -77,4 +61,16 @@ class Clima_tempo_API
     {
         return $this->request('locale/city/' . $city_id);
     }
+
+    function file_g_contents ($url, $method = 'GET', $header = array('Content-Type: application/x-www-form-urlencoded')) {
+        $curl_handle = curl_init();
+        curl_setopt($curl_handle, CURLOPT_URL, $url);
+        curl_setopt($curl_handle, CURLOPT_HTTPHEADER, $header);
+        curl_setopt($curl_handle, CURLOPT_CUSTOMREQUEST, $method);
+        curl_setopt($curl_handle, CURLOPT_CONNECTTIMEOUT, 2);
+        curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($curl_handle, CURLOPT_USERAGENT, 'Clima Tempo API');
+        return curl_exec($curl_handle);
+    }
+    
 }
