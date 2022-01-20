@@ -16,6 +16,9 @@ if ( !empty($all_cities)) {
         }
     }
     $idCity = $_POST['idcity'] ?? $city_registered->locales[0];
+    if(!empty($_POST['idcity'])){
+        $clima_api->register_a_city($idCity);
+    }
     if (!empty($idCity)) {
         $clima = $clima_api->current_weather($idCity);
     }
