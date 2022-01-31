@@ -1,7 +1,7 @@
 <?php
 require_once("app/modules/api.php");
-include_once("app/config/vendor/autoload.php");
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . "/app/config");
+include_once("vendor/autoload.php");
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ );
 $dotenv->load();
 $token = $_ENV['TOKEN'];
 
@@ -52,15 +52,16 @@ if ( !empty($all_cities)) {
             <div class="col-md-6">
                 <form action="index.php" method="POST">
                     <div class="row">
-                        <div class="col-md-9">
+                        <div class="col-md-8">
                             <select name="idcity" id="idcity" class="form-select">
                                 <?php foreach ($all_cities as $key => $values) { ?>
                                     <option value="<?php echo $values->id; ?>"><?php echo $values->name; ?></option>
                                 <?php } ?>
                             </select>
                         </div>
-                        <div class="col-md-3">
-                            <button type="submit" class="btn btn-primary btn-sm">Search</button>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-primary btn-sm me-2">Search</button>
+                            <button type="submit" class="btn btn-success btn-sm" id="registerCity">register city</button>
                         </div>
                     </div>
                 </form>
@@ -99,7 +100,7 @@ if ( !empty($all_cities)) {
                     <?php } else { ?>
                         <div class="row">
                             <div class="alert alert-danger" role="alert">
-                                Error: <?php echo $clima->detail ?? $all_cities->detail; ?>
+                                Error: <span id="error_alert"></span><?php echo $clima->detail ?? $all_cities->detail; ?>
                             </div>
                         </div>
                     <?php } ?>
@@ -138,6 +139,26 @@ if ( !empty($all_cities)) {
             allowClear: true
         });
 
+        $('#registerCity').click(function(){
+            $.ajax({
+                url: 'registerCity.php',
+                type: 'POST',
+                data: {
+                    idcity: $('#idcity').val()
+                },
+                success: function(response) {
+                    response = JSON.parse(response);
+                    $('#error_alert').html('');
+                    if (response.error == true) {
+                        $('#error_alert').html(response.detail);
+                        return false;
+                    }
+                    console.log(response);
+                }
+            });
+            return false;
+        });
+        
     });
 </script>
 
