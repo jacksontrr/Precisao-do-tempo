@@ -8,5 +8,9 @@
 # Outros.
 Dockerfile
 docker-compose.yml
-app/config/.env
+
+# Composer.
+composer.lock
+vendor
+.env
 
