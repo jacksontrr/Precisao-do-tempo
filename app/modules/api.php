@@ -4,6 +4,7 @@ class Clima_tempo_API
 {
 
     private $token = null;
+    protected $urlResgiter = 'http://apiadvisor.climatempo.com.br/api-manager/user-token/';
 
     function __construct($token)
     {
@@ -35,14 +36,14 @@ class Clima_tempo_API
 
     function register_a_city($city_id)
     {
-        $url = 'http://apiadvisor.climatempo.com.br/api-manager/user-token/' . $this->token . '/locales?localeId[]=' . $city_id;
-        $response = $this->file_g_contents($url, "PUT", array('Content-Type: application/x-www-form-urlencoded'));
+        $url = $this->urlResgiter . $this->token . '/locales';
+        $response = $this->file_g_contents($url, "PUT", array('Content-Type: application/x-www-form-urlencoded', array("localeId[]" => $city_id)));
         return json_decode($response);
     }
 
     function city_already_registered()
     {
-        $url = 'http://apiadvisor.climatempo.com.br/api-manager/user-token/' . $this->token . '/locales';
+        $url = $this->urlResgiter . $this->token . '/locales';
         $response = $this->file_g_contents($url);
         return json_decode($response);
     }
@@ -62,7 +63,7 @@ class Clima_tempo_API
         return $this->request('locale/city/' . $city_id);
     }
 
-    function file_g_contents ($url, $method = 'GET', $header = array('Content-Type: application/x-www-form-urlencoded')) {
+    protected function file_g_contents ($url, $method = 'GET', $header = array('Content-Type: application/x-www-form-urlencoded'), $dados = null) {
         $curl_handle = curl_init();
         curl_setopt($curl_handle, CURLOPT_URL, $url);
         curl_setopt($curl_handle, CURLOPT_HTTPHEADER, $header);
@@ -70,7 +71,12 @@ class Clima_tempo_API
         curl_setopt($curl_handle, CURLOPT_CONNECTTIMEOUT, 2);
         curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($curl_handle, CURLOPT_USERAGENT, 'Clima Tempo API');
-        return curl_exec($curl_handle);
+        if ($dados) {
+            curl_setopt($curl_handle, CURLOPT_POSTFIELDS, $dados);
+        }
+        $response = curl_exec($curl_handle);
+        curl_close($curl_handle);
+        return $response;
     }
     
 }
