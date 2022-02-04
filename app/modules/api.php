@@ -5,6 +5,7 @@ class Clima_tempo_API
 
     private $token = null;
     protected $urlResgiter = 'http://apiadvisor.climatempo.com.br/api-manager/user-token/';
+    protected $urlApi = 'http://apiadvisor.climatempo.com.br/api/v1/';
 
     function __construct($token)
     {
@@ -15,12 +16,9 @@ class Clima_tempo_API
 
     function request($endpoint = '', $params = array())
     {
-        $url = 'http://apiadvisor.climatempo.com.br/api/v1/' . $endpoint . '?token=' . $this->token . '&format=json';
+        $url = $this->urlApi . $endpoint . '?token=' . $this->token . '&format=json';
         if (is_array($params)) {
-            foreach ($params as $key => $value) {
-                if (empty($value)) continue;
-                $url .= $key . '=' . urlencode($value) . '&';
-            }
+            $url .= '&' . http_build_query($params);
             $url = substr($url, 0, -1);
             $response = $this->file_g_contents($url);
             return json_decode($response);
@@ -29,6 +27,10 @@ class Clima_tempo_API
         }
     }
 
+    /**
+     * Todas as cidades.
+     * @return array
+     */
     function all_cities()
     {
         return $this->request('locale/city');
@@ -37,10 +39,14 @@ class Clima_tempo_API
     function register_a_city($city_id)
     {
         $url = $this->urlResgiter . $this->token . '/locales';
-        $response = $this->file_g_contents($url, "PUT", array('Content-Type: application/x-www-form-urlencoded', array("localeId[]" => $city_id)));
+        $response = $this->file_g_contents($url, "PUT",  array("localeId[]" => $city_id));
         return json_decode($response);
     }
 
+    /**
+     * Cidade já cadastrada.
+     * @return object
+     */
     function city_already_registered()
     {
         $url = $this->urlResgiter . $this->token . '/locales';
@@ -48,22 +54,47 @@ class Clima_tempo_API
         return json_decode($response);
     }
 
-    function current_weather($city_id)
+    /**
+     * Informa o clima atual da cidade.
+     * @param int $city_id
+     * @return object
+     * 
+     */
+    function current_weather(int $city_id)
     {
         return $this->request('weather/locale/' . $city_id . '/current');
     }
 
-    function climate_rain($city_id)
+    /**
+     * Informa chuva climáticas da cidade.
+     * @param int $city_id
+     * @return object
+     */
+    function climate_rain(int $city_id)
     {
         return $this->request('climate/rain/locale/' . $city_id);
     }
 
-    function search_city_id($city_id)
+    /**
+     * Procura o id cidade.
+     * @param int $city_id
+     * @return object
+     */
+    function search_city_id(int $city_id)
     {
         return $this->request('locale/city/' . $city_id);
     }
 
-    protected function file_g_contents ($url, $method = 'GET', $header = array('Content-Type: application/x-www-form-urlencoded'), $dados = null) {
+    /**
+     * curl_file_get_contents
+     * @param string $url
+     * @param string $method
+     * @param array $headers
+     * @param array $fields
+     * @return string
+     */
+    protected function file_g_contents($url, $method = 'GET', $dados = null , $header = array('Content-Type: application/x-www-form-urlencoded'))
+    {
         $curl_handle = curl_init();
         curl_setopt($curl_handle, CURLOPT_URL, $url);
         curl_setopt($curl_handle, CURLOPT_HTTPHEADER, $header);
@@ -71,12 +102,13 @@ class Clima_tempo_API
         curl_setopt($curl_handle, CURLOPT_CONNECTTIMEOUT, 2);
         curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($curl_handle, CURLOPT_USERAGENT, 'Clima Tempo API');
-        if ($dados) {
-            curl_setopt($curl_handle, CURLOPT_POSTFIELDS, $dados);
+        curl_setopt($curl_handle, CURLOPT_POST, true);
+        if (is_array($dados)) {
+            curl_setopt($curl_handle, CURLOPT_POSTFIELDS, http_build_query($dados));
         }
+        // curl_setopt($curl_handle, CURLOPT_POSTFIELDS, 'localeId[]=5959'); esse funcionou!!!
         $response = curl_exec($curl_handle);
         curl_close($curl_handle);
         return $response;
     }
-    
 }
