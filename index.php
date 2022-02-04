@@ -1,9 +1,9 @@
 <?php
 require_once("app/modules/api.php");
-include_once("vendor/autoload.php");
+require_once("vendor/autoload.php");
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ );
 $dotenv->load();
-$token = $_ENV['TOKEN'];
+$token = $_ENV['TOKEN'] ?? null;
 
 $clima_api = new Clima_tempo_API($token);
 
@@ -74,33 +74,33 @@ if ( !empty($all_cities)) {
                         <h2>Weather Forecast for <?php echo $current_city; ?></h2>
                         <div class="row">
                             <label for="Temperature">
-                                <strong>Temperature:</strong> <span class="badge bg-info"><?php echo $clima->data->temperature; ?>ºC</span>
+                                <strong>Temperature:</strong> <span class="badge bg-info" id='temperature'><?php echo $clima->data->temperature; ?>ºC</span>
                             </label>
                         </div>
                         <div class="row">
                             <label for="Humidity">
-                                <strong>Humidity:</strong> <span class="badge bg-info"><?php echo $clima->data->humidity; ?>%</span>
+                                <strong>Humidity:</strong> <span class="badge bg-info" id="humidity"><?php echo $clima->data->humidity; ?>%</span>
                             </label>
                         </div>
                         <div class="row">
                             <label for="Pressure">
-                                <strong>Pressure:</strong> <span class="badge bg-info"><?php echo $clima->data->pressure; ?>hPa</span>
+                                <strong>Pressure:</strong> <span class="badge bg-info" id="pressure"><?php echo $clima->data->pressure; ?>hPa</span>
                             </label>
                         </div>
                         <div class="row">
                             <label for="Wind Velocity">
-                                <strong>Wind Velocity:</strong> <span class="badge bg-info"><?php echo $clima->data->wind_velocity; ?>km/h</span>
+                                <strong>Wind Velocity:</strong> <span class="badge bg-info" id="wind_velocity"><?php echo $clima->data->wind_velocity; ?>km/h</span>
                             </label>
                         </div>
                         <div class="row">
                             <label for="Date">
-                                <strong>Date:</strong> <span class="badge bg-info"><?php echo $clima->data->date; ?></span>
+                                <strong>Date:</strong> <span class="badge bg-info" id="date"><?php echo $clima->data->date; ?></span>
                             </label>
                         </div>
                     <?php } else { ?>
                         <div class="row">
                             <div class="alert alert-danger" role="alert">
-                                Error: <span id="error_alert"></span><?php echo $clima->detail ?? $all_cities->detail; ?>
+                                Error: <span id="error_alert"><?php echo $clima->detail; ?></span>
                             </div>
                         </div>
                     <?php } ?>
