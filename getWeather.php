@@ -10,7 +10,9 @@ $token = $_ENV['TOKEN'];
 
 $climaTempo = new Clima_tempo_API($token);
 
-$response = $climaTempo->register_a_city($idCity);
+$response = $climaTempo->current_weather($idCity);
 
 print json_encode($response);
+
+
 ?>

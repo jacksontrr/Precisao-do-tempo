@@ -1,6 +1,6 @@
 <?php
-require_once("app/modules/api.php");
-require_once("vendor/autoload.php");
+require_once("./app/api.php");
+require_once("./vendor/autoload.php");
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ );
 $dotenv->load();
 $token = $_ENV['TOKEN'] ?? null;
@@ -45,7 +45,8 @@ if ( !empty($all_cities)) {
                 <h1>Weather forecast</h1>
             </div>
             <div class="col-md-6">
-                <h4>Registered city: <?php echo $current_city; ?></h4>
+                <h4>Registered city: <span id="current_city"><?php echo $current_city; ?></span></h4>
+                <span class="error_alert"></span>
             </div>
         </div>
         <div class="row">
@@ -100,7 +101,7 @@ if ( !empty($all_cities)) {
                     <?php } else { ?>
                         <div class="row">
                             <div class="alert alert-danger" role="alert">
-                                Error: <span id="error_alert"><?php echo $clima->detail; ?></span>
+                                Error: <span class="error_alert"><?php echo $clima->detail; ?></span>
                             </div>
                         </div>
                     <?php } ?>
@@ -122,16 +123,18 @@ if ( !empty($all_cities)) {
 
         const id = sessionStorage.getItem('id');
         const city = sessionStorage.getItem('city');
+        if(city == ''){ sessionStorage.clear(); }
 
         $("#idcity").change(function() {
             sessionStorage.setItem('id', $('#idcity').val())
             sessionStorage.setItem('city', $('#idcity option:selected').text())
         });
-        if (id) {
+        if (city) {
             newOption = new Option(city, id, true, true);
             $('#idcity').append(newOption).trigger('change');
         } else {
             $('#idcity').val('').trigger('change');
+            sessionStorage.clear();
         }
 
         $('#idcity').select2({
@@ -148,9 +151,32 @@ if ( !empty($all_cities)) {
                 },
                 success: function(response) {
                     response = JSON.parse(response);
-                    $('#error_alert').html('');
-                    if (response.error == true) {
-                        $('#error_alert').html(response.detail);
+                    $('.error_alert').html('');
+                    if (response[1] === true) {
+                        $('.error_alert').html(response.detail);
+                        return false;
+                    }else if(response.status === true){
+                        $.ajax({
+                            url: 'getWeather.php',
+                            type: 'POST',
+                            data: {
+                                idcity: $('#idcity').val()
+                            },
+                            success: function(dados) {
+                                dados = JSON.parse(dados);
+                                $('.error_alert').html('');
+                                if (dados.error === true) {
+                                    $('.error_alert').html(dados.detail);
+                                } else {
+                                    $('#current_city').html(dados.name);
+                                    $('#temperature').html(dados.data.temperature);
+                                    $('#humidity').html(dados.data.humidity);
+                                    $('#pressure').html(dados.data.pressure);
+                                    $('#wind_velocity').html(dados.data.wind_velocity);
+                                    $('#date').html(dados.data.date);
+                                }
+                            }
+                        })
                         return false;
                     }
                     console.log(response);
